@@ -688,16 +688,24 @@ function saveToLeaderboard() {
   // Load existing leaderboard
   let leaderboard = JSON.parse(localStorage.getItem("airlineLeaderboard") || "[]");
 
-  // Push current player
   if (saveData && saveData.password && typeof saveData.money === "number") {
-    leaderboard.push({
-      password: saveData.password,
-      money: saveData.money
-    });
+    // Check if player is already on leaderboard
+    const existingIndex = leaderboard.findIndex(entry => entry.password === saveData.password);
+
+    if (existingIndex !== -1) {
+      // Update money if already exists
+      leaderboard[existingIndex].money = saveData.money;
+    } else {
+      // Otherwise, add new entry
+      leaderboard.push({
+        password: saveData.password,
+        money: saveData.money
+      });
+    }
   }
 
   // Sort by money descending and keep top 5
-  leaderboard.sort((a,b)=>b.money - a.money);
+  leaderboard.sort((a,b) => b.money - a.money);
   leaderboard = leaderboard.slice(0,5);
 
   localStorage.setItem("airlineLeaderboard", JSON.stringify(leaderboard));
