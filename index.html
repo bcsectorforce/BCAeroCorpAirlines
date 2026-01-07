@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>BC AeroCorp Airlines</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+/* =========================
+   GLOBAL RESET & VARIABLES
+   ========================= */
+:root {
+  --bg-dark: #0c0f14;
+  --bg-panel: #151a22;
+  --bg-panel-light: #1d2430;
+  --accent-blue: #3fa9f5;
+  --accent-green: #36d399;
+  --accent-red: #ff5c5c;
+  --accent-yellow: #ffd166;
+  --text-main: #e6eaf0;
+  --text-dim: #9aa4b2;
+  --border-soft: rgba(255,255,255,0.08);
+  --shadow-heavy: 0 20px 60px rgba(0,0,0,0.6);
+  --radius: 14px;
+  --radius-small: 8px;
+  --transition-fast: 0.15s ease;
+  --transition-med: 0.35s ease;
+  --transition-slow: 0.6s ease;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: radial-gradient(circle at top, #121826, #05070b);
+  color: var(--text-main);
+  font-family: "Segoe UI", Roboto, system-ui, sans-serif;
+  min-height: 100vh;
+}
+
+/* =========================
+   LAYOUT
+   ========================= */
+#app {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+header {
+  background: linear-gradient(135deg, #182033, #0f1420);
+  border-radius: var(--radius);
+  padding: 20px 30px;
+  box-shadow: var(--shadow-heavy);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+/* =========================
+   REAL-TIME FLIP CLOCK
+   ========================= */
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.clock {
+  font-family: "Courier New", monospace;
+  font-size: 20px;
+  letter-spacing: 2px;
+  color: var(--accent-yellow);
+  display: flex;
+  align-items: center;
+}
+
+.clock-colon {
+  margin: 0 4px;
+  animation: blink 1s infinite;
+}
+
+.ampm {
+  font-size: 12px;
+  margin-left: 6px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+}
+
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  50.01%, 100% { opacity: 0.2; }
+}
+
+.flip {
+  display: inline-block;
+  position: relative;
+  transition: transform 0.4s ease;
+}
+
+.flip.animate {
+  transform: rotateX(360deg);
+}
+
+
+header h1 {
+  font-size: 26px;
+  letter-spacing: 0.5px;
+}
+
+.stats {
+  display: flex;
+  gap: 30px;
+  font-size: 14px;
+}
+
+.stat {
+  color: var(--text-dim);
+}
+
+.stat strong {
+  color: var(--text-main);
+}
+
+/* =========================
+   SCREENS
+   ========================= */
+.screen {
+  display: none;
+}
+
+.screen.active {
+  display: block;
+}
+
+/* =========================
+   PANELS
+   ========================= */
+.panel {
+  background: var(--bg-panel);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow-heavy);
+  border: 1px solid var(--border-soft);
+}
+
+.panel-title {
+  font-size: 18px;
+  margin-bottom: 15px;
+  color: var(--accent-blue);
+}
+
+/* =========================
+   AIRPORT LIST
+   ========================= */
+.airport-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.airport {
+  background: var(--bg-panel-light);
+  border-radius: var(--radius-small);
+  padding: 16px;
+  border: 1px solid var(--border-soft);
+  transition: var(--transition-med);
+  cursor: pointer;
+}
+
+.airport:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+}
+
+.airport.closed {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.airport h3 {
+  margin-bottom: 8px;
+}
+
+.airport .status {
+  font-size: 12px;
+  color: var(--accent-green);
+}
+
+.airport.closed .status {
+  color: var(--accent-red);
+}
+
+/* =========================
+   SEAT SELECTION
+   ========================= */
+.seat-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.seat-table th,
+.seat-table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border-soft);
+  text-align: center;
+}
+
+.seat-class-1 {
+  color: var(--accent-yellow);
+}
+
+.seat-class-2 {
+  color: var(--accent-green);
+}
+
+.seat-taken {
+  opacity: 0.3;
+}
+
+/* =========================
+   SEAT BOOKING DECAY
+   ========================= */
+.seat-booked {
+  background: #0b0e14 !important;
+  color: #555 !important;
+  pointer-events: none;
+  opacity: 0.45;
+}
+
+
+/* =========================
+   LEADERBOARD
+   ========================= */
+#leaderboardTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#leaderboardTable th,
+#leaderboardTable td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border-soft);
+  text-align: center;
+  color: var(--text-main);
+}
+
+#leaderboardTable th {
+  color: var(--accent-blue);
+  font-size: 16px;
+}
+
+#leaderboardTable tr:nth-child(even) {
+  background: rgba(255,255,255,0.05);
+}
+
+#leaderboardTable tr:hover {
+  background: rgba(255,255,255,0.1);
+  transition: 0.3s ease;
+}
+
+
+
+button {
+  background: linear-gradient(135deg, var(--accent-blue), #1f6fb2);
+  border: none;
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: var(--radius-small);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+button:hover {
+  filter: brightness(1.15);
+}
+
+button.secondary {
+  background: linear-gradient(135deg, #444, #222);
+}
+
+/* =========================
+   BUYERS DASHBOARD
+   ========================= */
+.buyer-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.buyer {
+  background: var(--bg-panel-light);
+  padding: 14px;
+  border-radius: var(--radius-small);
+  border: 1px solid var(--border-soft);
+}
+
+.buyer h4 {
+  margin-bottom: 6px;
+}
+
+.offer {
+  margin-top: 10px;
+  color: var(--accent-yellow);
+}
+
+input[type="password"] {
+  background: #0e1420;
+  color: var(--text-main);
+  border: 1px solid var(--border-soft);
+}
+
+input::placeholder {
+  color: var(--text-dim);
+}
+
+/* =========================
+   BUYER FADE ANIMATION
+   ========================= */
+.buyer.fade-out {
+  opacity: 0;
+  transform: translateY(10px) scale(0.98);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+
+/* =========================
+   FOOTER
+   ========================= */
+footer {
+  text-align: center;
+  margin-top: 30px;
+  color: var(--text-dim);
+  font-size: 12px;
+}
+</style>
+</head>
+
+<body>
+<div id="app">
+
+<header>
+  <h1>✈ BC AeroCorp Airlines</h1>
+  <div class="stats">
+    <div class="stat">Day: <strong id="dayLabel"></strong></div>
+    <div class="stat">Money: <strong>$<span id="moneyLabel"></span></strong></div>
+    <div class="stat">Tickets Owned: <strong id="ticketsLabel"></strong></div>
+  </div>
+  <div class="header-left">
+  <div id="clock" class="clock">
+  <span id="clock-hours">12</span>
+  <span class="clock-colon">:</span>
+  <span id="clock-minutes" class="flip">00</span>
+  <span id="clock-ampm" class="ampm">AM</span>
+</div>
+
+<!-- SCREEN 4: LEADERBOARD -->
+<div class="screen" id="screen-leaderboard">
+  <div class="panel">
+    <div class="panel-title">Buyer Statistics — Top 5 Buyers</div>
+    <table class="seat-table" id="leaderboardTable">
+      <tr>
+        <th>Rank</th>
+        <th>Password (last 3 digits)</th>
+        <th>Money</th>
+      </tr>
+    </table>
+    <br>
+    <button onclick="backToAirports()">Back</button>
+  </div>
+</div>
+
+
+</div>
+
+<div class="stats">
+ 
+<button onclick="showScreen('screen-leaderboard')">Buyer Stats</button>
+
+  
+</header>
+
+<!-- SCREEN 0: ACCOUNT -->
+<div class="screen active" id="screen-login">
+  <div class="panel" style="max-width: 420px; margin: 80px auto;">
+    <div class="panel-title">BC AeroCorp Airlines — Account</div>
+
+    <p style="color: var(--text-dim); margin-bottom: 12px;">
+      Enter your password to continue
+    </p>
+
+    <input id="passwordInput" type="password" placeholder="Password"
+           style="width:100%; padding:12px; margin-bottom:12px; border-radius:8px; border:none;">
+
+    <button style="width:100%;" onclick="login()">Login</button>
+
+    <hr style="margin:18px 0; border-color: var(--border-soft);">
+
+    <button class="secondary" style="width:100%;" onclick="showCreatePassword()">
+      New Player / Create Password
+    </button>
+
+    <div id="createPasswordArea" style="display:none; margin-top:14px;">
+      <input id="newPasswordInput" type="password" placeholder="New Password"
+             style="width:100%; padding:12px; margin-bottom:10px; border-radius:8px; border:none;">
+      <button style="width:100%;" onclick="createAccount()">Create Account</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- SCREEN 1: AIRPORT SELECTION -->
+<div class="screen" id="screen-airports">
+  <div class="panel">
+    <div class="panel-title">Buy Tickets — Select Airport</div>
+    <div class="airport-grid" id="airportGrid"></div>
+  </div>
+</div>
+
+<!-- SCREEN 2: SEATS -->
+<div class="screen" id="screen-seats">
+  <div class="panel">
+    <div class="panel-title">Select Seat & Time</div>
+    <table class="seat-table" id="seatTable"></table>
+    <br>
+    Time:
+    <input type="number" id="timeInput" min="1" max="12">
+    <select id="ampm">
+      <option>AM</option>
+      <option>PM</option>
+    </select>
+    <br><br>
+    <button onclick="buySeat()">Buy Ticket</button>
+    <button class="secondary" onclick="backToAirports()">Cancel</button>
+  </div>
+</div>
+
+<!-- SCREEN 3: BUYERS -->
+<div class="screen" id="screen-buyers">
+  <div class="panel">
+    <div class="panel-title">Buyers Dashboard</div>
+    <div class="buyer-list" id="buyerList"></div>
+    <br>
+    <button onclick="nextDay()">End Day</button>
+  </div>
+</div>
+
+<footer>
+  18 years or older only
+</footer>
+
+</div>
+
+<script>
+
+  
+  /* =========================
+   ACCOUNT SYSTEM
+   ========================= */
+
+let saveData = null;
+
+function loadSave() {
+  
+    /* =========================
+   INIT
+   ========================= */
+
+updateHeader();
+
+  
+  const raw = localStorage.getItem("airlineTycoonSave");
+  if (raw) {
+    saveData = JSON.parse(raw);
+  }
+}
+
+function saveGame() {
+  if (!saveData) return;
+
+  saveData.money = money;
+  saveData.dayIndex = dayIndex;
+
+  localStorage.setItem("airlineTycoonSave", JSON.stringify(saveData));
+}
+
+function login() {
+  const input = document.getElementById("passwordInput").value;
+  if (!saveData) {
+    alert("No account found. Create one first.");
+    return;
+  }
+
+  if (input !== saveData.password) {
+    alert("Incorrect password");
+    return;
+  }
+
+  // Load saved state
+  money = saveData.money;
+  dayIndex = saveData.dayIndex;
+
+  updateHeader();
+  loadAirports();
+  showScreen("screen-airports");
+}
+
+function showCreatePassword() {
+  document.getElementById("createPasswordArea").style.display = "block";
+}
+
+function createAccount() {
+  const pw = document.getElementById("newPasswordInput").value;
+  if (!pw || pw.length < 3) {
+    alert("Password too short");
+    return;
+  }
+
+  saveData = {
+    password: pw,
+    money: 10000,
+    dayIndex: 0
+  };
+
+  localStorage.setItem("airlineTycoonSave", JSON.stringify(saveData));
+
+  money = 10000;
+  dayIndex = 0;
+
+  updateHeader();
+  loadAirports();
+  showScreen("screen-airports");
+}
+
+/* =========================
+   GAME STATE
+   ========================= */
+const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+let dayIndex = 0;
+let money = 10000;
+let ticketsOwned = 0;
+let currentAirport = null;
+let currentSeat = null;
+let buyerTimer = null;
+let buyersRemaining = 0;
+let seatBookingTimer = null;
+let seatElements = [];
+
+
+
+const airports = [
+  "ATL","ORD","DFW","DEN","LAX","JFK","BOS","MIA","CLT","PHX","SEA"
+];
+
+const evenDays = [0,2,4];
+const oddDays = [1,3,6];
+
+/* =========================
+   UI UPDATE
+   ========================= */
+function updateHeader() {
+  dayLabel.textContent = days[dayIndex];
+  moneyLabel.textContent = money.toFixed(0);
+  ticketsLabel.textContent = ticketsOwned;
+}
+
+/* =========================
+   AIRPORT SCREEN
+   ========================= */
+function loadAirports() {
+  airportGrid.innerHTML = "";
+  airports.forEach(a=>{
+    const open = evenDays.includes(dayIndex) ? airports.indexOf(a)%2===0 : airports.indexOf(a)%2===1;
+    const div = document.createElement("div");
+    div.className = "airport" + (open?"":" closed");
+    div.innerHTML = `<h3>${a}</h3><div class="status">${open?"Open":"Closed"}</div>`;
+    if(open){
+      div.onclick = ()=>selectAirport(a);
+    }
+    airportGrid.appendChild(div);
+  });
+}
+
+/* =========================
+   SEATS
+   ========================= */
+function selectAirport(a){
+  currentAirport = a;
+  showScreen("screen-seats");
+  loadSeats();
+}
+
+function loadSeats(){
+  seatTable.innerHTML = `
+    <tr>
+      <th>Seat</th>
+      <th>Class</th>
+      <th>Price</th>
+      <th>Status</th>
+    </tr>
+  `;
+
+  seatElements = [];
+
+  // Clear old timer
+  if (seatBookingTimer) {
+    clearInterval(seatBookingTimer);
+    seatBookingTimer = null;
+  }
+
+  for(let i = 1; i <= 8; i++){
+    const cls = i <= 3 ? 1 : 2;
+    const price = Math.round((cls === 1 ? 1200 : 500) * (0.7 + Math.random()));
+
+    const tr = document.createElement("tr");
+    tr.dataset.booked = "false";
+    tr.dataset.class = cls;
+    tr.dataset.price = price;
+
+    tr.innerHTML = `
+      <td>${i}</td>
+      <td class="seat-class-${cls}">Class ${cls}</td>
+      <td>$${price}</td>
+      <td class="status">Available</td>
+    `;
+
+    tr.onclick = () => {
+      if (tr.dataset.booked === "true") return;
+
+      currentSeat = { cls, price };
+
+      document.querySelectorAll(".seat-table tr").forEach(r=>{
+        r.style.background = "";
+      });
+
+      tr.style.background = "#223";
+    };
+
+    seatTable.appendChild(tr);
+    seatElements.push(tr);
+  }
+
+  startSeatBookingDecay();
+}
+
+function startSeatBookingDecay() {
+  seatBookingTimer = setInterval(() => {
+    const availableSeats = seatElements.filter(
+      seat => seat.dataset.booked === "false"
+    );
+
+    if (availableSeats.length === 0) {
+      clearInterval(seatBookingTimer);
+      seatBookingTimer = null;
+      return;
+    }
+
+    // Random seat gets booked
+    const seat = availableSeats[Math.floor(Math.random() * availableSeats.length)];
+
+    seat.dataset.booked = "true";
+    seat.classList.add("seat-booked");
+
+    seat.querySelector(".status").textContent = "Booked";
+
+    // If player had selected this seat, deselect it
+    if (
+      currentSeat &&
+      Number(seat.dataset.price) === currentSeat.price &&
+      Number(seat.dataset.class) === currentSeat.cls
+    ) {
+      currentSeat = null;
+    }
+
+  }, 5000); // every 5 seconds
+}
+
+
+/* =========================
+   LEADERBOARD LOGIC
+   ========================= */
+function saveToLeaderboard() {
+  // Load existing leaderboard
+  let leaderboard = JSON.parse(localStorage.getItem("airlineLeaderboard") || "[]");
+
+  // Push current player
+  if (saveData && saveData.password && typeof saveData.money === "number") {
+    leaderboard.push({
+      password: saveData.password,
+      money: saveData.money
+    });
+  }
+
+  // Sort by money descending and keep top 5
+  leaderboard.sort((a,b)=>b.money - a.money);
+  leaderboard = leaderboard.slice(0,5);
+
+  localStorage.setItem("airlineLeaderboard", JSON.stringify(leaderboard));
+}
+
+function loadLeaderboard() {
+  saveToLeaderboard(); // always save current session first
+
+  const leaderboard = JSON.parse(localStorage.getItem("airlineLeaderboard") || "[]");
+  const table = document.getElementById("leaderboardTable");
+
+  // Clear old rows except header
+  table.querySelectorAll("tr:not(:first-child)").forEach(r=>r.remove());
+
+  leaderboard.forEach((entry, i)=>{
+    const last3 = entry.password.slice(-3).padStart(3, "*"); // mask shorter passwords
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${i+1}</td>
+      <td>${last3}</td>
+      <td>$${entry.money.toLocaleString()}</td>
+    `;
+    table.appendChild(tr);
+  });
+}
+
+// Refresh leaderboard every 5 seconds
+setInterval(loadLeaderboard, 5000);
+
+
+
+function buySeat(){
+  if (seatBookingTimer) {
+  clearInterval(seatBookingTimer);
+  seatBookingTimer = null;
+}
+  
+  if(!currentSeat) return alert("Select a seat");
+  money -= currentSeat.price;
+  ticketsOwned++;
+  updateHeader();
+  showScreen("screen-buyers");
+  loadBuyers();
+}
+
+/* =========================
+   BUYERS WITH TIME LOGIC
+   ========================= */
+function convertTo24(hour, ampm){
+  if(ampm === "AM") return hour === 12 ? 0 : hour;
+  if(ampm === "PM") return hour === 12 ? 12 : hour + 12;
+}
+
+function loadBuyers(){
+  buyerList.innerHTML = "";
+
+  // Clear any old timer
+  if (buyerTimer) {
+    clearInterval(buyerTimer);
+    buyerTimer = null;
+  }
+
+  buyersRemaining = Math.floor(Math.random() * 6) + 5; // 5–10 buyers
+
+  for(let i = 0; i < buyersRemaining; i++){
+    const wantsClass = Math.random() < 0.4 ? 1 : 2;
+    const offer = Math.round(currentSeat.price * (0.8 + Math.random() * 0.4));
+
+    // Assign random desired time
+    const desiredHour = Math.floor(Math.random() * 12) + 1;
+    const desiredAMPM = Math.random() < 0.5 ? "AM" : "PM";
+
+    const div = document.createElement("div");
+    div.className = "buyer";
+    div.dataset.class = wantsClass;
+    div.dataset.offer = offer;
+    div.dataset.desiredHour = desiredHour;
+    div.dataset.desiredAMPM = desiredAMPM;
+
+    div.innerHTML = `
+      <h4>Buyer #${i + 1}</h4>
+      Wants ${currentAirport}<br>
+      Class ${wantsClass}<br>
+      Time: ${desiredHour} ${desiredAMPM}<br>
+      <div class="offer">Offer: $${offer}</div>
+      <button onclick="acceptOffer(${offer}, ${wantsClass}, this, ${desiredHour}, '${desiredAMPM}')">Accept</button>
+    `;
+
+    buyerList.appendChild(div);
+  }
+
+  startBuyerDecay();
+}
+
+/* =========================
+   BUYER DECAY
+   ========================= */
+function startBuyerDecay() {
+  // Remove buyers slowly over time (simulate them leaving)
+  buyerTimer = setInterval(() => {
+    const buyers = Array.from(document.querySelectorAll(".buyer"));
+    if (buyers.length === 0) {
+      clearInterval(buyerTimer);
+      buyerTimer = null;
+      return;
+    }
+
+    // Pick a random buyer to fade out
+    const buyer = buyers[Math.floor(Math.random() * buyers.length)];
+    buyer.classList.add("fade-out");
+
+    // Remove from DOM after animation
+    setTimeout(() => {
+      if (buyer.parentNode) buyer.parentNode.removeChild(buyer);
+    }, 800); // match .fade-out transition duration
+  }, 5000); // every 5 seconds
+}
+
+
+function acceptOffer(offer, cls, btn, desiredHour, desiredAMPM){
+  const selectedHour = parseInt(timeInput.value);
+  const selectedAMPM = ampm.value;
+
+  const selected24 = convertTo24(selectedHour, selectedAMPM);
+  const desired24 = convertTo24(desiredHour, desiredAMPM);
+
+  const diff = Math.abs(selected24 - desired24);
+  if(diff > 4){
+    alert("Buyer declined — flight time mismatch (more than 4 hours difference)");
+    return;
+  }
+
+  if(cls !== currentSeat.cls){
+    alert("Buyer declined — wrong class");
+    return;
+  }
+
+  if (buyerTimer) {
+    clearInterval(buyerTimer);
+    buyerTimer = null;
+  }
+
+  money += offer;
+  ticketsOwned--;
+
+  updateHeader();
+  nextDay();
+  
+  saveGame();
+
+}
+
+/* =========================
+   DAY FLOW
+   ========================= */
+function nextDay(){
+  dayIndex = (dayIndex+1)%7;
+  currentSeat = null;
+  showScreen("screen-airports");
+  loadAirports();
+  updateHeader();
+}
+
+function backToAirports(){
+  showScreen("screen-airports");
+}
+
+if (seatBookingTimer) {
+  clearInterval(seatBookingTimer);
+  seatBookingTimer = null;
+
+  saveGame();
+
+  
+}
+
+
+
+/* =========================
+   SCREEN CONTROL
+   ========================= */
+function showScreen(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+/* =========================
+   REAL-WORLD CLOCK
+   ========================= */
+let lastMinute = null;
+
+function updateClock() {
+  const now = new Date();
+
+  let hours = now.getHours(); // 0–23
+  const minutes = now.getMinutes();
+  const ampm = hours >= 12 ? "PM" : "AM";
+
+  hours = hours % 12;
+  hours = hours === 0 ? 12 : hours; // midnight/noon fix
+
+  const hourStr = hours.toString().padStart(2, "0");
+  const minuteStr = minutes.toString().padStart(2, "0");
+
+  document.getElementById("clock-hours").textContent = hourStr;
+  document.getElementById("clock-ampm").textContent = ampm;
+
+  const minuteEl = document.getElementById("clock-minutes");
+
+  if (minuteStr !== lastMinute) {
+    minuteEl.classList.add("animate");
+    setTimeout(() => minuteEl.classList.remove("animate"), 400);
+    lastMinute = minuteStr;
+  }
+
+  minuteEl.textContent = minuteStr;
+}
+
+// Update every second
+setInterval(updateClock, 1000);
+updateClock();
+
+
+/* =========================
+   INIT
+   ========================= */
+loadSave(); // Load saved account from localStorage
+updateHeader(); // update stats
+showScreen("screen-login"); // always show login screen first
+
+</script>
+</body>
+</html>
