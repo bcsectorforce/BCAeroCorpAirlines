@@ -523,13 +523,13 @@ function createAccount() {
 
   saveData = {
     password: pw,
-    money: 10000,
+    money: 150,
     dayIndex: 0
   };
 
   localStorage.setItem("airlineTycoonSave", JSON.stringify(saveData));
 
-  money = 10000;
+  money = 150;
   dayIndex = 0;
 
   updateHeader();
@@ -542,7 +542,7 @@ function createAccount() {
    ========================= */
 const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 let dayIndex = 0;
-let money = 10000;
+let money = 150;
 let ticketsOwned = 0;
 let currentAirport = null;
 let currentSeat = null;
