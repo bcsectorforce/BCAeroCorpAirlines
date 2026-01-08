@@ -466,19 +466,18 @@ footer {
 let saveData = null;
 
 function loadSave() {
-  
-    /* =========================
-   INIT
-   ========================= */
-
-updateHeader();
-
-  
   const raw = localStorage.getItem("airlineTycoonSave");
+
   if (raw) {
     saveData = JSON.parse(raw);
+
+    // FORCE starting money while developing
+    saveData.money = 150;
+    money = 150;
+    dayIndex = saveData.dayIndex ?? 0;
   }
 }
+
 
 function saveGame() {
   if (!saveData) return;
