@@ -499,6 +499,12 @@ function loadSave() {
   }
 }
 
+if (saveData && saveData.password) {
+  document.getElementById("passwordInput").placeholder =
+    "Enter existing password";
+}
+
+   
 function saveGame() {
   if (!saveData || !saveData.password) return;
 
