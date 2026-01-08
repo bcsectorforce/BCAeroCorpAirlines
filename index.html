@@ -500,12 +500,16 @@ function loadSave() {
 }
 
 function saveGame() {
-  if (!saveData) return;
+  if (!saveData || !saveData.password) return;
 
-  saveData.money = money;
-  saveData.dayIndex = dayIndex;
+  const newSave = {
+    password: saveData.password,   // 🔒 NEVER LOST
+    money: money,
+    dayIndex: dayIndex
+  };
 
-  localStorage.setItem("airlineTycoonSave", JSON.stringify(saveData));
+  saveData = newSave;
+  localStorage.setItem("airlineTycoonSave", JSON.stringify(newSave));
 }
 
 function login() {
