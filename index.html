@@ -468,16 +468,36 @@ let saveData = null;
 function loadSave() {
   const raw = localStorage.getItem("airlineTycoonSave");
 
-  if (raw) {
+  if (!raw) {
+    saveData = null;
+    return;
+  }
+
+  try {
     saveData = JSON.parse(raw);
 
-    // FORCE starting money while developing
-    saveData.money = 150;
-    money = 150;
-    dayIndex = saveData.dayIndex ?? 0;
+    // Validate save integrity
+    if (
+      typeof saveData.password !== "string" ||
+      typeof saveData.money !== "number" ||
+      typeof saveData.dayIndex !== "number"
+    ) {
+      console.warn("Save data corrupted — resetting");
+      saveData = null;
+      localStorage.removeItem("airlineTycoonSave");
+      return;
+    }
+
+    // Apply save to runtime state
+    money = saveData.money;
+    dayIndex = saveData.dayIndex;
+
+  } catch (e) {
+    console.error("Failed to load save:", e);
+    saveData = null;
+    localStorage.removeItem("airlineTycoonSave");
   }
 }
-
 
 function saveGame() {
   if (!saveData) return;
