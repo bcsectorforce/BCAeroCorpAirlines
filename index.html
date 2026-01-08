@@ -623,9 +623,18 @@ function importSaveString(code) {
   }
 
   saveGame();
-  updateHeader();
+updateHeader();
+loadAirports();
 
-  alert("✅ Account imported successfully!");
+// Go straight into the game
+showScreen("screen-airports");
+
+// Optional professional confirmation
+setTimeout(() => {
+  alert("Account imported successfully");
+}, 150);
+
+  
 }
 
    
