@@ -264,6 +264,65 @@ header h1 {
   transition: 0.3s ease;
 }
 
+   /* =========================
+   RECORDS / ACHIEVEMENTS
+   ========================= */
+
+.records-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.record-card {
+  background: linear-gradient(135deg, #1c2330, #141922);
+  border-radius: var(--radius);
+  padding: 16px;
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-heavy);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease;
+}
+
+.record-card:hover {
+  transform: translateY(-4px);
+}
+
+.record-card.locked {
+  opacity: 0.4;
+}
+
+.record-title {
+  font-size: 16px;
+  color: var(--accent-blue);
+  margin-bottom: 6px;
+}
+
+.record-desc {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.record-reward {
+  margin-top: 10px;
+  color: var(--accent-yellow);
+  font-weight: 600;
+}
+
+/* UNLOCK ANIMATION */
+.record-unlocked {
+  animation: unlockGlow 1.2s ease;
+  border-color: var(--accent-green);
+}
+
+@keyframes unlockGlow {
+  0%   { box-shadow: 0 0 0 rgba(0,0,0,0); }
+  50%  { box-shadow: 0 0 30px rgba(54,211,153,0.7); }
+  100% { box-shadow: 0 0 0 rgba(0,0,0,0); }
+}
+
+
 
 
 button {
@@ -375,14 +434,26 @@ footer {
   </div>
 </div>
 
+     <!-- SCREEN: RECORDS -->
+<div class="screen" id="screen-records">
+  <div class="panel">
+    <div class="panel-title">Career Records & Achievements</div>
+
+    <div id="recordsGrid" class="records-grid"></div>
+
+    <br>
+    <button class="secondary" onclick="backToAirports()">Back</button>
+  </div>
+</div>
+
+
 
 </div>
 
 <div class="stats">
  
-<button onclick="showScreen('screen-leaderboard')">Buyer Stats</button>
+<button onclick="openRecords()">Records</button>
 
-  
 </header>
 
 <!-- SCREEN 0: ACCOUNT -->
@@ -498,6 +569,13 @@ const VALID_SUFFIXES = [
   "Q",
   "Z"
 ];
+
+   let recordState = JSON.parse(localStorage.getItem("airlineRecords") || "{}");
+
+function saveRecords() {
+  localStorage.setItem("airlineRecords", JSON.stringify(recordState));
+}
+
 
    
    
@@ -700,6 +778,25 @@ let buyerTimer = null;
 let buyersRemaining = 0;
 let seatBookingTimer = null;
 let seatElements = [];
+let totalTicketsSold = 0;
+let class1TicketsSold = 0;
+
+
+   const RECORDS = [
+  { id: "money_10k", type: "money", value: 10000, reward: 10000, title: "High Roller", desc: "Reach $10,000 cash" },
+
+  { id: "sell_150", type: "tickets", value: 150, reward: 50, title: "Ticket Trader I", desc: "Sell 150 tickets total" },
+  { id: "sell_300", type: "tickets", value: 300, reward: 500, title: "Ticket Trader II", desc: "Sell 300 tickets total" },
+  { id: "sell_500", type: "tickets", value: 500, reward: 1000, title: "Ticket Trader III", desc: "Sell 500 tickets total" },
+  { id: "sell_700", type: "tickets", value: 700, reward: 3000, title: "Market Veteran", desc: "Sell 700 tickets total" },
+  { id: "sell_100k", type: "tickets", value: 100000, reward: 50000, title: "Aviation Empire", desc: "Sell 100000 tickets total" },
+
+  { id: "class1_10", type: "class1", value: 10, reward: 60, title: "First Class I", desc: "Sell 10 first-class tickets" },
+  { id: "class1_30", type: "class1", value: 30, reward: 200, title: "First Class II", desc: "Sell 30 first-class tickets" },
+  { id: "class1_100", type: "class1", value: 100, reward: 500, title: "First Class Elite", desc: "Sell 100 first-class tickets" },
+  { id: "class1_1000", type: "class1", value: 1000, reward: 1000, title: "Luxury Mogul", desc: "Sell 1000 first-class tickets" }
+];
+
 
 
 
@@ -1001,7 +1098,17 @@ function acceptOffer(offer, cls, btn, desiredHour, desiredAMPM){
   money += offer;
   ticketsOwned--;
 
-  updateHeader();
+totalTicketsSold++;
+
+if (cls === 1) {
+  class1TicketsSold++;
+}
+
+checkRecords();
+
+   
+   
+updateHeader();
   nextDay();
   
   saveGame();
@@ -1011,7 +1118,72 @@ function acceptOffer(offer, cls, btn, desiredHour, desiredAMPM){
 /* =========================
    DAY FLOW
    ========================= */
-function nextDay(){
+
+   function checkRecords() {
+  RECORDS.forEach(rec => {
+    if (recordState[rec.id]) return;
+
+    let met = false;
+
+    if (rec.type === "money" && money >= rec.value) met = true;
+    if (rec.type === "tickets" && totalTicketsSold >= rec.value) met = true;
+    if (rec.type === "class1" && class1TicketsSold >= rec.value) met = true;
+
+    if (met) unlockRecord(rec);
+  });
+}
+
+function unlockRecord(record) {
+  recordState[record.id] = true;
+  money += record.reward;
+
+  saveRecords();
+  saveGame();
+  updateHeader();
+
+  showRecordUnlock(record);
+}
+   
+function showRecordUnlock(record) {
+  const card = document.querySelector(`[data-record="${record.id}"]`);
+  if (!card) return;
+
+  card.classList.remove("locked");
+  card.classList.add("record-unlocked");
+
+  setTimeout(() => {
+    card.classList.remove("record-unlocked");
+  }, 1200);
+}
+
+function openRecords() {
+  renderRecords();
+  showScreen("screen-records");
+}
+
+function renderRecords() {
+  const grid = document.getElementById("recordsGrid");
+  grid.innerHTML = "";
+
+  RECORDS.forEach(r => {
+    const unlocked = recordState[r.id];
+
+    const div = document.createElement("div");
+    div.className = "record-card" + (unlocked ? "" : " locked");
+    div.dataset.record = r.id;
+
+    div.innerHTML = `
+      <div class="record-title">${r.title}</div>
+      <div class="record-desc">${r.desc}</div>
+      <div class="record-reward">Reward: $${r.reward.toLocaleString()}</div>
+    `;
+
+    grid.appendChild(div);
+  });
+}
+
+   
+   function nextDay(){
   dayIndex = (dayIndex+1)%7;
   currentSeat = null;
   showScreen("screen-airports");
