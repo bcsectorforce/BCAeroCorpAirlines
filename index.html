@@ -64,6 +64,84 @@ header {
 /* =========================
    REAL-TIME FLIP CLOCK
    ========================= */
+
+@media (max-width: 768px) {
+  #app {
+    padding: 10px;
+  }
+
+  header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .stats {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .airport-grid, .buyer-list, .records-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+  }
+
+  .seat-table th, .seat-table td {
+    padding: 8px;
+    font-size: 12px;
+  }
+
+  button {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+
+  input[type="password"], input[type="number"], select {
+    font-size: 14px;
+    padding: 10px;
+  }
+}
+
+
+.airport:active,
+.record-card:active,
+button:active {
+  transform: scale(0.98);
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.seat-table, #leaderboardTable {
+  width: 100%;
+  min-width: 320px; /* ensures scrollable on narrow screens */
+}
+
+
+<div class="table-container">
+  <table class="seat-table" id="seatTable"></table>
+</div>
+
+@media (max-width: 768px) {
+  button, .airport, .record-card {
+    padding: 14px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-left, .stats {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .clock {
+    justify-content: flex-start;
+  }
+}
+
+
 .header-left {
   display: flex;
   flex-direction: column;
