@@ -5,7 +5,19 @@
 <title>BC AeroCorp Airlines</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<style>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#3fa9f5">
+
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./service-worker.js')
+    .then(() => console.log("Service worker registered"))
+    .catch(err => console.error("SW registration failed:", err));
+}
+</script>
+
+   
+   <style>
 /* =========================
    GLOBAL RESET & VARIABLES
    ========================= */
