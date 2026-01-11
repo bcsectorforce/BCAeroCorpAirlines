@@ -1,4 +1,4 @@
-const CACHE_NAME = "bc-aerocorp-cache-v1";
+const CACHE_NAME = "bc-aerocorp-cache-v2";
 
 const urlsToCache = [
   "/",
