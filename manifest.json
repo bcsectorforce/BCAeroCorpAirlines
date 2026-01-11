@@ -1,22 +1,12 @@
-{
-  "name": "BC AeroCorp Airlines",
-  "short_name": "BC AeroCorp",
-  "description": "Buy and sell airline tickets in this tycoon game!",
-  "start_url": "/",
-  "scope": "/",
-  "display": "standalone",
-  "background_color": "#0c0f14",
-  "theme_color": "#3fa9f5",
-  "icons": [
-    {
-      "src": "assets/icon.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "assets/icon.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ]
-}
+"icons": [
+  {
+    "src": "/icon.png",
+    "sizes": "192x192",
+    "type": "image/png"
+  },
+  {
+    "src": "/icon.png",
+    "sizes": "512x512",
+    "type": "image/png"
+  }
+]
