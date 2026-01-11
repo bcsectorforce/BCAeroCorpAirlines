@@ -4,6 +4,15 @@ const urlsToCache = [
   '/index.html'
 ];
 
+self.addEventListener("install", () => {
+  self.skipWaiting();
+});
+
+self.addEventListener("activate", () => {
+  self.clients.claim();
+});
+
+
 // Install event
 self.addEventListener('install', (event) => {
   event.waitUntil(
