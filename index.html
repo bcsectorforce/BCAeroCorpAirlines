@@ -1206,8 +1206,8 @@ function acceptOffer(offer, cls, btn, desiredHour, desiredAMPM){
   const desired24 = convertTo24(desiredHour, desiredAMPM);
 
   const diff = Math.abs(selected24 - desired24);
-  if(diff > 4){
-    alert("Buyer declined — flight time mismatch (more than 4 hours difference)");
+  if(diff > 6){
+    alert("Buyer declined — flight time mismatch (more than 6  hours difference)");
     return;
   }
 
